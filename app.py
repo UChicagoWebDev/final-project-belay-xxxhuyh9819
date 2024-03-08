@@ -90,16 +90,22 @@ def login():
     password = request.json.get('password')
 
     query = "select * from user where name = ? and password = ?"
-    user = query_db(query, [username, password], one=True)
+    try:
+        user = query_db(query, [username, password], one=True)
 
-    if not user:
-        print("user not found")
-        return {}, 403
+        if not user:
+            print("user not found")
+            return jsonify({"code": 403, "msg": "User not found!"})
 
-    print("user found")
-    return jsonify({'user_id': user['id'],
-                    'user_name': user['name'],
-                    'api_key': user['api_key']}), 200
+        print("user found")
+        return jsonify({"code": 200,
+                        "user":
+                            {'user_id': user['id'],
+                             'user_name': user['name'],
+                             'api_key': user['api_key']}
+                        })
+    except Exception as e:
+        return jsonify({"code": 500, "msg": e})
 
 
 @app.route('/api/signup', methods=['POST'])
@@ -114,15 +120,68 @@ def signup():
     '''
     try:
         if is_user_already_there(username):
-            return {}, 403
+            return jsonify({"code": 403, "msg": "This username has already been occupied!"})
         user = new_user(username, password)
-        return jsonify({
-            "api_key": user["api_key"],
-            "user_name": user["name"],
-            "user_id": user["id"]
-        }), 200
-    except:
-        return {}, 500
+        return jsonify({"code": 200,
+                        "user":
+                            {'user_id': user['id'],
+                             'user_name': user['name'],
+                             'api_key': user['api_key']}
+                        })
+    except Exception as e:
+        return jsonify({"code": 500, "msg": e})
+
+
+@app.route('/api/update_username', methods=['POST'])
+@cross_origin()
+def update_username():
+    api_key = request.json.get('api_key')
+    new_name = request.json.get('new_name')
+
+    if not api_key:
+        return jsonify({"code": 403, "msg": "API key is required."})
+
+    query = "select * from user where api_key = ?"
+
+    # Find the user by API key
+    user = query_db(query,(api_key,), one=True)
+    if not user:
+        return jsonify({"code": 404, "msg": "Invalid API key."})
+    else:
+        # check if the name has been occupied by another user
+        old_user = query_db("select * from user where name = ?",(new_name,), one=True)
+        if old_user:
+            return jsonify({"code": 403, "msg": "This name has been occupied!"})
+        try:
+            query_db('update user set name = ? where api_key = ?',
+                     (new_name, api_key))
+            return jsonify({"code": 200, "msg": "Username updated successfully."})
+        except Exception as e:
+            return jsonify({"code": 500, "msg": e})
+
+
+@app.route('/api/update_password', methods=['POST'])
+@cross_origin()
+def update_password():
+    api_key = request.json.get('api_key')
+    new_password = request.json.get('new_password')
+
+    if not api_key:
+        return jsonify({"code": 403, "msg": "API key is required."})
+
+    query = "select * from user where api_key = ?"
+
+    # Find the user by API key
+    user = query_db(query,(api_key,), one=True)
+    if not user:
+        return jsonify({"code": 404, "msg": "Invalid API key."})
+    else:
+        try:
+            query_db('update user set password = ? where api_key = ?',
+                     (new_password, api_key))
+            return jsonify({"code": 200, "msg": "Password updated successfully."})
+        except Exception as e:
+            return jsonify({"code": 500, "msg": e})
 
 
 if __name__ == '__main__':

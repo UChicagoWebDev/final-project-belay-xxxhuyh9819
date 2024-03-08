@@ -45,25 +45,21 @@ function SignUp({ LoginCredentials }) {
                 password: password,
             }),
         }).then(response => {
-             if (response.status === 200) {
-                 return response.json()
-             } else if (response.status === 403) {
-                 alert("Duplicate User name!")
-                 return null
-             } else {
-                 alert("Unknown server error!")
-                 return null
-             }
-        }).then(user => {
-            if (user) {
-                localStorage.setItem('user_name', user.user_name);
-                localStorage.setItem('user_id', user.user_id);
-                localStorage.setItem(`yunhaohu_belay_api_key`, user.api_key);
+             return response.json()
+        }).then(data => {
+            if (data.code === 200) {
+                localStorage.setItem('user_name', data.user.user_name);
+                localStorage.setItem('user_id', data.user.user_id);
+                localStorage.setItem(`yunhaohu_belay_api_key`, data.user.api_key);
                 LoginCredentials(localStorage.getItem("user_id"));
 
                 alert("Account created successfully! Navigating to Home page...")
                  // src: https://remix.run/docs/en/main/hooks/use-navigate
                  navigate('/home');
+            } else {
+                alert(data.msg)
+                setUsername("")
+                setPassword("")
             }
         }).catch(error => {
             console.log(`Unexpected Error: ${error}`)

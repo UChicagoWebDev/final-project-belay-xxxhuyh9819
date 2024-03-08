@@ -1,8 +1,9 @@
 import { BrowserRouter, Route, Routes, Navigate} from 'react-router-dom';
 import Home from ".//Home";
-import Login from "./Login";
+import Login from "./login";
 import {useState} from "react";
 import SignUp from "./signUp";
+import Profile from "./profile";
 
 function App() {
   const [loginStatus, setLoginStatus] =
@@ -29,8 +30,8 @@ function App() {
                 <Route exact path="/home" element={loginStatus ? <Home LoginCredentials={handleLoginStatus}/>
                     : <Navigate replace to={"/login"}/>}/>
 
-                {/*<Route exact path="/profile" element={loginStatus ? <Profile LoginStatus={handleLoginStatus}/>*/}
-                {/*    : <Navigate replace to={"/login"} />}/>*/}
+                <Route exact path="/profile" element={loginStatus ? <Profile LoginCredentials={handleLoginStatus}/>
+                    : <Navigate replace to={"/login"} />}/>
 
                 {/*/!*<Route exact path="/channel/:channelId" element={loginStatus ? <ChannelDetails loginStatus={handleLoginStatus} />*!/*/}
                 {/*/!*    : <Navigate replace to="/login" />} />*!/*/}

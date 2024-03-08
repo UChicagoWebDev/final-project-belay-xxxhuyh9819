@@ -30,15 +30,17 @@ function Login({ LoginCredentials }) {
               console.log("Error: " + response.status)
               return null
           }
-      }).then(user => {
-         if (user) {
-            localStorage.setItem('user_name', user.user_name);
-            localStorage.setItem('user_id', user.user_id);
-            localStorage.setItem(`yunhaohu_belay_api_key`, user.api_key);
+      }).then(data => {
+         if (data.code === 200) {
+            localStorage.setItem('user_name', data.user.user_name);
+            localStorage.setItem('user_id', data.user.user_id);
+            localStorage.setItem(`yunhaohu_belay_api_key`, data.user.api_key);
             LoginCredentials(localStorage.getItem("user_id"));
 
             alert("Login Successfully! Navigating to Home page...")
             navigate('/home');
+         } else {
+             alert(data.msg)
          }
       }).catch(error => {
           console.log(error)
