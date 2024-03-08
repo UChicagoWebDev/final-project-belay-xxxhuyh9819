@@ -32,7 +32,7 @@ function Login({ LoginCredentials }) {
           }
       }).then(user => {
          if (user) {
-            localStorage.setItem('username', user.user_name);
+            localStorage.setItem('user_name', user.user_name);
             localStorage.setItem('user_id', user.user_id);
             localStorage.setItem(`yunhaohu_belay_api_key`, user.api_key);
             LoginCredentials(localStorage.getItem("user_id"));
