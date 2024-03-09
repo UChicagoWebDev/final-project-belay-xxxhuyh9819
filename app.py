@@ -10,7 +10,8 @@ from functools import wraps
 import os
 
 os.chdir(os.getcwd())
-app = Flask(__name__, template_folder="./template", static_folder="./static/static")
+# app = Flask(__name__, template_folder="./template", static_folder="./static/static")
+app = Flask(__name__, template_folder="./template", static_folder="./static")
 
 
 @app.route('/', defaults={'path': ''})
@@ -73,7 +74,7 @@ def is_user_already_there(username):
 @app.route('/signup')
 @app.route('/home')
 @app.route('/profile')
-@app.route('/createChannel')
+@app.route('/new_channel')
 @app.route('/channels/<channel_id>')
 @app.route('/channels/<chat_id>/message/<message_id>')
 def index(chat_id=None, message_id=None):
@@ -199,7 +200,7 @@ def get_channels():
         return jsonify({"msg": e}), 500
 
 
-@app.route('/api/channel',  methods=['GET'])
+@app.route('/api/channel', methods=['GET'])
 def get_channel_by_id():
     try:
         channel_id = request.args.get('channel_id')
@@ -212,6 +213,26 @@ def get_channel_by_id():
             return jsonify([]), 200
     except Exception as e:
         return jsonify({"msg": e}), 500
+
+
+@app.route('/api/new_channel', methods=['POST'])
+def create_channel():
+    channel_name = request.json.get('channel_name')
+    print(channel_name)
+    try:
+        old_channel = query_db('select * from channel where name = ?', (channel_name,), one=True)
+        if old_channel:
+            return jsonify({"code": 403, "msg": "The channel name has been occupied!"})
+
+        channel = query_db('insert into channel (name) values (?) returning id, name', (channel_name,), one=True)
+        if channel:
+            return jsonify({"code": 200, "channel": {
+                'id': channel['id'],
+                'name': channel['name']
+            }, "msg": "Channel created successfully!"})
+    except Exception as e:
+        return jsonify({"code": 500, "msg": e})
+
 
 @app.route('/api/messages', methods=['GET'])
 def get_messages_by_channel_id():
