@@ -1,13 +1,28 @@
-import os
+from flask import Flask
+import string
 import sqlite3
 import random
-import string
+from datetime import datetime
+from flask import *
 from flask_cors import CORS, cross_origin
 
-from flask import *
+from functools import wraps
+import os
 
-app = Flask(__name__)
 
+os.chdir(os.getcwd())
+app = Flask(__name__, template_folder="./template", static_folder="./static/static")
+
+
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve(path):
+    if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
+        print("path exists")
+        return send_from_directory(app.static_folder, path)
+    else:
+        print("index.html")
+        return send_from_directory(app.static_folder, 'index.html')
 
 def get_db():
     db = getattr(g, '_database', None)
@@ -133,12 +148,12 @@ def update_username():
     query = "select * from user where api_key = ?"
 
     # Find the user by API key
-    user = query_db(query,(api_key,), one=True)
+    user = query_db(query, (api_key,), one=True)
     if not user:
         return jsonify({"code": 404, "msg": "Invalid API key."})
     else:
         # check if the name has been occupied by another user
-        old_user = query_db("select * from user where name = ?",(new_name,), one=True)
+        old_user = query_db("select * from user where name = ?", (new_name,), one=True)
         if old_user:
             return jsonify({"code": 403, "msg": "This name has been occupied!"})
         try:
@@ -161,7 +176,7 @@ def update_password():
     query = "select * from user where api_key = ?"
 
     # Find the user by API key
-    user = query_db(query,(api_key,), one=True)
+    user = query_db(query, (api_key,), one=True)
     if not user:
         return jsonify({"code": 404, "msg": "Invalid API key."})
     else:
@@ -179,13 +194,23 @@ def get_channels():
     try:
         channel = query_db('select * from channel')
         if channel:
-            print([dict(i) for i in channel])
             return jsonify([dict(i) for i in channel]), 200
         else:
             jsonify([]), 200
     except Exception as e:
         return jsonify({"msg": e}), 500
 
-if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=8000, debug=True, use_reloader=False)
+@app.route('/api/channels/<int:channel_id>/messages', methods=['GET'])
+def get_messages_by_channel_id(channel_id):
+    try:
+        # rid = request.args.get('room_id')
+        messages = query_db('select * from message where channel_id = ?', (channel_id,), one=False)
+        if messages:
+            return jsonify([dict(msg) for msg in messages]), 200
+        else:
+            return jsonify([]), 200
+    except Exception as e:
+        return jsonify([]), 500
 
+if __name__ == '__main__':
+    app.run()
