@@ -9,7 +9,6 @@ from flask_cors import CORS, cross_origin
 from functools import wraps
 import os
 
-
 os.chdir(os.getcwd())
 app = Flask(__name__, template_folder="./template", static_folder="./static/static")
 
@@ -18,11 +17,10 @@ app = Flask(__name__, template_folder="./template", static_folder="./static/stat
 @app.route('/<path:path>')
 def serve(path):
     if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
-        print("path exists")
         return send_from_directory(app.static_folder, path)
     else:
-        print("index.html")
         return send_from_directory(app.static_folder, 'index.html')
+
 
 def get_db():
     db = getattr(g, '_database', None)
@@ -200,17 +198,41 @@ def get_channels():
     except Exception as e:
         return jsonify({"msg": e}), 500
 
-@app.route('/api/channels/<int:channel_id>/messages', methods=['GET'])
-def get_messages_by_channel_id(channel_id):
+
+@app.route('/api/channel',  methods=['GET'])
+def get_channel_by_id():
     try:
-        # rid = request.args.get('room_id')
-        messages = query_db('select * from message where channel_id = ?', (channel_id,), one=False)
+        channel_id = request.args.get('channel_id')
+        channel = query_db('select * from channel where id = ?', (channel_id,), one=True)
+        if channel:
+            return jsonify({'id': channel['id'],
+                            'name': channel['name']
+                            })
+        else:
+            return jsonify([]), 200
+    except Exception as e:
+        return jsonify({"msg": e}), 500
+
+@app.route('/api/messages', methods=['GET'])
+def get_messages_by_channel_id():
+    query = """
+    select m.id, m.body, u.name as author, m.channel_id
+    from message m
+    join user u ON m.user_id = u.id
+    where channel_id = ?
+    group by m.id
+    order by m.id asc 
+    """
+    try:
+        channel_id = request.args.get('channel_id')
+        messages = query_db(query, (channel_id,), one=False)
         if messages:
             return jsonify([dict(msg) for msg in messages]), 200
         else:
             return jsonify([]), 200
     except Exception as e:
-        return jsonify([]), 500
+        return jsonify({"msg": e}), 500
+
 
 if __name__ == '__main__':
     app.run()
