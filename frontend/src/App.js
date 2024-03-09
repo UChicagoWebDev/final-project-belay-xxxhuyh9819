@@ -18,6 +18,8 @@ function App() {
     return (
         <BrowserRouter>
             <Routes>
+                <Route exact path="*" element={loginStatus ? <Navigate replace to={"/home"}/>
+                    : <Navigate replace to="/login" />} />
                 {/*if logged in, go to home page, else go to login page */}
                 <Route exact path="/" element={<Navigate replace to={loginStatus ? "/home" : "/login"}/>}/>
                 <Route exact path="/login" element={loginStatus ? <Navigate replace to={"/home"}/>
@@ -33,15 +35,14 @@ function App() {
                 <Route exact path="/profile" element={loginStatus ? <Profile LoginCredentials={handleLoginStatus}/>
                     : <Navigate replace to={"/login"} />}/>
 
-                {/*/!*<Route exact path="/channel/:channelId" element={loginStatus ? <ChannelDetails loginStatus={handleLoginStatus} />*!/*/}
-                {/*/!*    : <Navigate replace to="/login" />} />*!/*/}
+                <Route exact path="/channel/:channelId" element={loginStatus ? <Home LoginCredentials={handleLoginStatus}/>
+                    : <Navigate replace to={"/login"}/>} />
 
                 {/*<Route exact path="/channel/:channelId" element={loginStatus ? <Home LoginStatus={handleLoginStatus}/>*/}
                 {/*    : <Navigate replace to="/login" />} />*/}
 
 
-                {/*<Route exact path="*" element={loginStatus ? <Navigate replace to={"/home"}/>*/}
-                {/*    : <Navigate replace to="/login" />} />*/}
+
 
             </Routes>
         </BrowserRouter>

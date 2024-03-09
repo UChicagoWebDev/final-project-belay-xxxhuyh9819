@@ -13,13 +13,16 @@ function Home({LoginCredentials}) {
     const [selectedChannel, setSelectedChannel] = useState(null);
     const [channels, setChannels] = useState([])
     const [channelName, setChannelName] = useState()
+    const [messages, setMessages] = useState()
 
     const baseUrl = "http://127.0.0.1:5000"
 
     // src: https://stackoverflow.com/questions/63605682/reactjs-call-function-on-startup-of-application-with-a-functional-component
     useEffect(() => {
         getChannels();
+        // getMessagesByChannel(selectedChannelId)
         setInterval(()=>getChannels(), 1000);
+        // setInterval(()=>getMessagesByChannel(selectedChannelId), 500);
     }, []);
 
     function getChannels() {
@@ -31,11 +34,19 @@ function Home({LoginCredentials}) {
         }).then(response => response.json())
             .then(data => {
                 setChannels(data)
+                console.log(data)
             }).catch(error => console.log(error))
     }
 
     function handleCreateChannel() {
 
+    }
+
+    function handleSelectedChannel(channel) {
+        setSelectedChannel(channel)
+        // getMessagesByChannel(channel.id)
+        console.log(selectedChannel)
+        navigate(`/channel/${channel.id}`)
     }
 
 
@@ -44,7 +55,6 @@ function Home({LoginCredentials}) {
         <TopBar LoginCredentials={LoginCredentials} username={username}/>
 
         <div className="main-content">
-            {/*<ChannelsList numOfChannels={value => setTotalChannels(value)} currentChannel={value => setSelectedChannel(value)} />*/}
             {/*<ChannelDetails numOfChannels={totalChannels} selectedChannel={selectedChannel} />*/}
             <div className="channels-list">
                 <div className="title_block">
@@ -67,7 +77,7 @@ function Home({LoginCredentials}) {
                         return (
                             <li
                                 key={data.id}
-                                // onClick={() => handleSelectedChannel(data)}
+                                onClick={() => handleSelectedChannel(data)}
                                 className={selectedChannel !== null && data.id === selectedChannel.id ? "selected": "other"}>
                                 {data.name}
                             </li>
@@ -75,6 +85,31 @@ function Home({LoginCredentials}) {
                     })}
                 </ul>
 
+            </div>
+
+            <div className="channel-messages">
+                <div className="channel-details">
+                    <span>{selectedChannel ? `#${selectedChannel.name}` : "Click to enter a channel!"}</span>
+
+                    {/*<ul>*/}
+                    {/*    {messages.map((message) => {*/}
+                    {/*        return (*/}
+                    {/*            <li*/}
+                    {/*                key={message.id}>*/}
+                    {/*                {message.body}*/}
+                    {/*                /!*{message.id}*!/*/}
+                    {/*            </li>*/}
+                    {/*        )*/}
+                    {/*    })}*/}
+                    {/*    <li>{messages[0].body}</li>*/}
+                    {/*</ul>*/}
+
+                </div>
+
+            </div>
+
+            <div className="message-replies">
+                <h1>Replies</h1>
             </div>
 
         </div>

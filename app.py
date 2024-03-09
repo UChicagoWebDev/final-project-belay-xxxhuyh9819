@@ -55,25 +55,14 @@ def is_user_already_there(username):
     return user_already_there if user_already_there is not None else None
 
 
-@app.route('/', defaults={'path': ''})
-@app.route('/<path:path>')
-def serve(path):
-    if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
-        print("path exists")
-        return send_from_directory(app.static_folder, path)
-    else:
-        print("index.html")
-        return send_from_directory(app.static_folder, 'index.html')
-
-
 @app.route('/')
 @app.route('/login')
 @app.route('/signup')
 @app.route('/home')
 @app.route('/profile')
 @app.route('/createChannel')
-@app.route('/channel/<chat_id>')
-@app.route('/channel/<chat_id>/message/<message_id>')
+@app.route('/channels/<channel_id>')
+@app.route('/channels/<chat_id>/message/<message_id>')
 def index(chat_id=None, message_id=None):
     return app.send_static_file('index.html')
 
@@ -188,14 +177,15 @@ def update_password():
 @cross_origin()
 def get_channels():
     try:
-        ch = query_db('select * from channel')
-        if ch:
-            return jsonify([dict(i) for i in ch]), 200
+        channel = query_db('select * from channel')
+        if channel:
+            print([dict(i) for i in channel])
+            return jsonify([dict(i) for i in channel]), 200
         else:
             jsonify([]), 200
     except Exception as e:
         return jsonify({"msg": e}), 500
 
-
 if __name__ == '__main__':
-    app.run()
+    app.run(host='127.0.0.1', port=8000, debug=True, use_reloader=False)
+
