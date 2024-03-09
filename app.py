@@ -184,5 +184,18 @@ def update_password():
             return jsonify({"code": 500, "msg": e})
 
 
+@app.route('/api/channels', methods=['GET'])
+@cross_origin()
+def get_channels():
+    try:
+        ch = query_db('select * from channel')
+        if ch:
+            return jsonify([dict(i) for i in ch]), 200
+        else:
+            jsonify([]), 200
+    except Exception as e:
+        return jsonify({"msg": e}), 500
+
+
 if __name__ == '__main__':
     app.run()
