@@ -6,6 +6,10 @@
 
 https://classroom.github.com/a/qeha1A1z
 
+
+**There is a small chance of hitting 404 after log in. In this case, please hit the go home button.**
+
+
 ## Introduction
 
 As a capstone project for Web Development, we're going to combine the various
