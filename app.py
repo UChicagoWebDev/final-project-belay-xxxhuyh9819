@@ -295,5 +295,31 @@ def create_post():
         return jsonify({"code": 500, 'msg': 'Unknown Error!'})
 
 
+# replies
+@app.route('/api/replies', methods=['GET'])
+def get_replies_by_message_id():
+    message_id = request.args.get("message_id")
+
+    print(message_id)
+    query = """
+     select *
+    from reply r
+    left join user master on r.author_id = master.id
+    left join main.message m on master.id = m.user_id
+    where message_id = ?
+    group by r.id
+    order by r.id asc
+    """
+    try:
+        replies = query_db(query, (message_id,), one=False)
+        if replies:
+            return jsonify({"code": 200, "replies": [dict(msg) for msg in replies]})
+        else:
+            return jsonify({"code": 200, "replies": []})
+    except Exception as e:
+        return jsonify({"msg": e}), 500
+
+
+
 if __name__ == '__main__':
     app.run()
