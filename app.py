@@ -319,6 +319,22 @@ def get_replies_by_message_id():
     except Exception as e:
         return jsonify({"msg": e}), 500
 
+@app.route('/api/new_reply', methods=['POST'])
+def create_reply():
+    api_key = request.json.get('api_key')
+    author_id = request.json.get('author_id')
+    reply_contents = request.json.get('reply_contents')
+    message_id = request.json.get('message_id')
+
+    if not api_key:
+        return jsonify({"code": 403, "msg": "API key is required."})
+    try:
+        query = "insert into reply (author_id, body, message_id) values (?, ?, ?) returning id, message_id, author_id"
+        query_db(query, (author_id, reply_contents, message_id), one=True)
+        return jsonify({"code": 200, "msg": 'Successfully replied!'})
+    except Exception as e:
+        return jsonify({"code": 500, 'msg': 'Unknown Error!'})
+
 
 
 if __name__ == '__main__':
