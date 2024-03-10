@@ -272,16 +272,27 @@ def update_channel_name():
         query = "update channel set name = ? where id = ?"
 
         query_db(query, (channel_name, channel_id), one=True)
-            # parameters = (channel_name, rId)
-            # conn = get_db()
-            # cursor = conn.cursor()
-            # cursor.execute(query, parameters)
-            # conn.commit()
-            # conn.close()
 
         return jsonify({"code": 200, "msg": 'Successfully Updated room name!'})
     except Exception as e:
-        return jsonify({"code": 200, 'msg': 'Unknown Error!'})
+        return jsonify({"code": 500, 'msg': 'Unknown Error!'})
+
+
+@app.route('/api/new_post', methods=['POST'])
+def create_post():
+    api_key = request.json.get('api_key')
+    author_id = request.json.get('author_id')
+    post_contents = request.json.get('post_contents')
+    channel_id = request.json.get('channel_id')
+
+    if not api_key:
+        return jsonify({"code": 403, "msg": "API key is required."})
+    try:
+        query = "insert into message (user_id, channel_id, body) values (?, ?, ?) returning id, channel_id, user_id"
+        query_db(query, (author_id, channel_id, post_contents), one=True)
+        return jsonify({"code": 200, "msg": 'Successfully created a post!'})
+    except Exception as e:
+        return jsonify({"code": 500, 'msg': 'Unknown Error!'})
 
 
 if __name__ == '__main__':
