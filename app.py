@@ -6,7 +6,6 @@ from datetime import datetime
 from flask import *
 from flask_cors import CORS, cross_origin
 
-from functools import wraps
 import os
 
 os.chdir(os.getcwd())
@@ -31,7 +30,6 @@ def get_db():
         db.row_factory = sqlite3.Row
         setattr(g, '_database', db)
     return db
-
 
 @app.teardown_appcontext
 def close_connection(exception):
@@ -75,9 +73,9 @@ def is_user_already_there(username):
 @app.route('/home')
 @app.route('/profile')
 @app.route('/new_channel')
-@app.route('/channels/<channel_id>')
+@app.route('/channel/<channel_id>')
 @app.route('/channels/<chat_id>/message/<message_id>')
-def index(chat_id=None, message_id=None):
+def index(channel_id=None, message_id=None):
     return app.send_static_file('index.html')
 
 
@@ -187,6 +185,7 @@ def update_password():
             return jsonify({"code": 500, "msg": e})
 
 
+# channels
 @app.route('/api/channels', methods=['GET'])
 @cross_origin()
 def get_channels():
@@ -210,15 +209,14 @@ def get_channel_by_id():
                             'name': channel['name']
                             })
         else:
-            return jsonify([]), 200
+            return jsonify({"code": 404, "msg": "Channel Doesn't exist!"})
     except Exception as e:
-        return jsonify({"msg": e}), 500
+        return jsonify({"code": 500, "msg": e})
 
 
 @app.route('/api/new_channel', methods=['POST'])
 def create_channel():
     channel_name = request.json.get('channel_name')
-    print(channel_name)
     try:
         old_channel = query_db('select * from channel where name = ?', (channel_name,), one=True)
         if old_channel:
@@ -234,6 +232,7 @@ def create_channel():
         return jsonify({"code": 500, "msg": e})
 
 
+# channel details
 @app.route('/api/messages', methods=['GET'])
 def get_messages_by_channel_id():
     query = """
@@ -253,6 +252,36 @@ def get_messages_by_channel_id():
             return jsonify([]), 200
     except Exception as e:
         return jsonify({"msg": e}), 500
+
+
+@app.route('/api/update_channel_name', methods=['POST'])
+def update_channel_name():
+
+    api_key = request.json.get('api_key')
+    channel_name = request.json.get('channel_name')
+    channel_id = request.json.get('room_id')
+
+    if not api_key:
+        return jsonify({"code": 403, "msg": "API key is required."})
+
+    try:
+        old_channel = query_db('select * from channel where name = ?', (channel_name,), one=True)
+        if old_channel:
+            return jsonify({"code": 403, "msg": "The channel name has been occupied!"})
+
+        query = "update channel set name = ? where id = ?"
+
+        query_db(query, (channel_name, channel_id), one=True)
+            # parameters = (channel_name, rId)
+            # conn = get_db()
+            # cursor = conn.cursor()
+            # cursor.execute(query, parameters)
+            # conn.commit()
+            # conn.close()
+
+        return jsonify({"code": 200, "msg": 'Successfully Updated room name!'})
+    except Exception as e:
+        return jsonify({"code": 200, 'msg': 'Unknown Error!'})
 
 
 if __name__ == '__main__':
