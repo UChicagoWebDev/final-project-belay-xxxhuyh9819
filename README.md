@@ -6,6 +6,10 @@
 
 https://classroom.github.com/a/qeha1A1z
 
+**The source code for front end is also included in the "frontend". However, you don't need to run it.**
+**To run the app, just run "flask run" command.**
+**To run the frontend source code, run "npm install" and "npm start" commands.**
+
 
 **There is a small chance of hitting 404 after log in. In this case, please hit the go home button.**
 
